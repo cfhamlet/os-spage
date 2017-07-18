@@ -1,0 +1,9 @@
+[run]
+parallel = true
+branch = true
+source = os_spage
+
+[paths]
+source =
+    src/os_spage
+    .tox/*/lib/python*/site-packages/os_spage
