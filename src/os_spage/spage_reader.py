@@ -15,11 +15,10 @@ class SpageReader(object):
     def _reset(self):
         self._url = self._url_last
         self._inner_header = {}
-        self._http_header = StringIO.StringIO()
+        self._http_header = {}
         self._data = None
         self._read = self._read_inner_header
         self._url_last = None
-
 
     def close(self):
         self._reset()
@@ -29,8 +28,7 @@ class SpageReader(object):
         d = {}
         d['url'] = self._url
         d['inner_header'] = self._inner_header
-        self._http_header.seek(0)
-        d['http_header'] = self._http_header.read()
+        d['http_header'] = self._http_header
         d['data'] = self._data
         return d
 
@@ -59,13 +57,17 @@ class SpageReader(object):
         line = self._fp.readline()
         if not line:
             raise StopIteration
-        if not line.strip() and self._http_header.len > 0:
+        if not line.strip() and self._http_header:
             self._read = self._read_data
         elif is_url(line):
             self._url_last = line.strip()
             self._read = self._read_data
         else:
-            self._http_header.write(line)
+            d = line.find(":")
+            if d > 0:
+                key = line[0:d].strip()
+                value = line[d + 1:].strip()
+                self._http_header[key] = value
 
         return self._read()
 

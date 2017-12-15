@@ -18,10 +18,10 @@ Read and write spage.
     response = urllib2.urlopen(req)
 
     html = response.read()
-    res_headers = response.headers
+    res_headers = response.headers.dict
 
     f = open_file('file', 'w', roll_size='1G', compress=True)
-    f.write(url, html, inner_header=req_headers, http_header=res_headers.dict, flush=True)
+    f.write(url, html, inner_header=req_headers, http_header=res_headers, flush=True)
     f.close()
   ```
   * Read
@@ -33,7 +33,7 @@ Read and write spage.
             continue
         print data['url']
         print data['inner_header'] # dict
-        print data['http_header'] # string
+        print data['http_header']  # dict
         print data['data']
     f.close()
 

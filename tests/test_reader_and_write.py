@@ -74,7 +74,7 @@ def test_read_with_http_header(tmpdir):
         for page in f.read():
             assert page["url"] == url
             assert zlib.decompress(page['data']) == data
-            assert page["http_header"] == 'Server: nginx\r\n'
+            assert page["http_header"] == headers
 
 
 def test_read_with_inner_header(tmpdir):
