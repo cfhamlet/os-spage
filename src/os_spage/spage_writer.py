@@ -23,6 +23,7 @@ INNER_HEADER = {
     "Digest": '0' * 32,
     "User-Agent": None,
     "Fetch-IP": '0.0.0.0',
+    "Node-Fetch-Time": None,
 }
 
 
