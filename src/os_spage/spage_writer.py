@@ -45,7 +45,7 @@ class SpageWriter(object):
         return '\r\n'.join([': '.join((k, v)) for k, v in http_header.items()])
 
     def _inner_header_str(self, inner_header):
-        return "\n".join([": ".join([str(k), str(v)]) for
+        return "\n".join([": ".join((str(k), str(v))) for
                           k, v in inner_header.items() if v is not None])
 
     def _inner_header(self, inner_header):
