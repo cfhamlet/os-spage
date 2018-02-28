@@ -1,7 +1,8 @@
 import StringIO
-from utils import is_url
+
 from os_rotatefile import open_file
 
+from utils import is_url
 
 TAG_STORE_SIZE = 'Store-Size'
 

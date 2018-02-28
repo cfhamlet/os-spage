@@ -1,16 +1,20 @@
 import copy
+import StringIO
 import time
 import zlib
-import StringIO
-from utils import is_url
+from collections import OrderedDict
+
 from os_rotatefile import open_file
+
+from utils import is_url
 
 _TIME_FORMAT = "%a %b %d %X %Y"
 
 COMPRESSED_TYPE = 'compressed'
 DELETED_TYPE = 'deleted'
+FLAT_TYPE = 'flat'
 
-INNER_HEADER = {
+INNER_HEADER = OrderedDict({
     "Version": 1.2,
     "Type": None,
     "Fetch-Time": None,
@@ -24,7 +28,7 @@ INNER_HEADER = {
     "User-Agent": None,
     "Fetch-IP": '0.0.0.0',
     "Node-Fetch-Time": None,
-}
+})
 
 
 class SpageWriter(object):
@@ -41,12 +45,13 @@ class SpageWriter(object):
         return '\r\n'.join([': '.join((k, v)) for k, v in http_header.items()])
 
     def _inner_header_str(self, inner_header):
-        return "\n".join([i + ": " + str(inner_header[i]) for i in INNER_HEADER if i in inner_header and inner_header[i] is not None])
+        return "\n".join([": ".join([str(k), str(v)]) for
+                          k, v in inner_header.items() if v is not None])
 
     def _inner_header(self, inner_header):
         d = copy.deepcopy(INNER_HEADER)
         if inner_header is not None:
-           d.update(inner_header)
+            d.update(inner_header)
         if d['Fetch-Time'] is None:
             d['Fetch-Time'] = time.strftime(_TIME_FORMAT,
                                             time.localtime())
@@ -60,18 +65,22 @@ class SpageWriter(object):
         inner_header = item['inner_header']
 
         store_size = original_size = len(
-            item['body']) if item['body'] is not None else None
+            item['data']) if item['data'] is not None else None
         inner_header['Original-Size'] = original_size
 
         out_data = None
         if original_size is not None:
             if not skip_store:
-                if self._compress:
-                    inner_header['Type'] = COMPRESSED_TYPE
-                    out_data = self._compress_data(item['body'])
-                    store_size = len(out_data)
+                if inner_header.get('Type', None) is None:
+                    if self._compress:
+                        inner_header['Type'] = COMPRESSED_TYPE
+                        out_data = self._compress_data(item['data'])
+                        store_size = len(out_data)
+                    else:
+                        inner_header['Type'] = FLAT_TYPE
+                        out_data = item['data']
                 else:
-                    out_data = item['body']
+                    out_data = item['data']
             else:
                 store_size = None
 
@@ -92,13 +101,13 @@ class SpageWriter(object):
         o.seek(0)
         return o.read()
 
-    def write(self, url, page=None, inner_header=None, http_header=None,
+    def write(self, url, data=None, inner_header=None, http_header=None,
               skip_store=False, flush=False):
         if not is_url(url):
             raise ValueError, 'Invalid url'
         item = {'url': url}
         item['inner_header'] = self._inner_header(inner_header)
-        item['http_header'] = http_header 
-        item['body'] = page
+        item['http_header'] = http_header
+        item['data'] = data
         store_data = self._process(item, skip_store)
         self._fp.write(store_data, flush)
