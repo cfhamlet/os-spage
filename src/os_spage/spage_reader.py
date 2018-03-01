@@ -2,7 +2,7 @@ import StringIO
 
 from os_rotatefile import open_file
 
-from utils import is_url
+from validator import simple_check_url
 
 TAG_STORE_SIZE = 'Store-Size'
 
@@ -43,7 +43,7 @@ class SpageReader(object):
             self._read = self._read_http_header
         elif line_length > 1024:
             pass
-        elif is_url(line):
+        elif simple_check_url(line):
             self._reset()
             self._url = line
         else:
@@ -60,7 +60,7 @@ class SpageReader(object):
             raise StopIteration
         if not line.strip() and self._http_header:
             self._read = self._read_data
-        elif is_url(line):
+        elif simple_check_url(line):
             self._url_last = line.strip()
             self._read = self._read_data
         else:

@@ -26,7 +26,7 @@ setup(
     author_email='cfhamlet@gmail.com',
     url='https://github.com/cfhamlet/os-spage',
     zip_safe=False,
-    install_requires=['os-rotatefile'],
+    install_requires=['os-rotatefile', 'jsonschema'],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

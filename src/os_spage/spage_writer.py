@@ -2,112 +2,109 @@ import copy
 import StringIO
 import time
 import zlib
+from datetime import datetime
 from collections import OrderedDict
 
 from os_rotatefile import open_file
 
-from utils import is_url
-
-_TIME_FORMAT = "%a %b %d %X %Y"
-
-COMPRESSED_TYPE = 'compressed'
-DELETED_TYPE = 'deleted'
-FLAT_TYPE = 'flat'
-
-INNER_HEADER = OrderedDict({
-    "Version": 1.2,
-    "Type": None,
-    "Fetch-Time": None,
-    "Original-Size": None,
-    "Store-Size": None,
-    "batchID": None,
-    "attach": None,
-    "IP-Address": '0.0.0.0',
-    "Spider-Address": '0.0.0.0',
-    "Digest": '0' * 32,
-    "User-Agent": None,
-    "Fetch-IP": '0.0.0.0',
-    "Node-Fetch-Time": None,
-})
+from default_schema import META_SCHEMA
+from validator import create_validator, TIME_FORMAT
 
 
 class SpageWriter(object):
-    def __init__(self, base_filename, roll_size='1G', compress=True):
+    def __init__(self, base_filename, roll_size='1G', compress=True, validator=None):
         self._fp = open_file(base_filename, 'w', roll_size=roll_size)
         self._compress = compress
+        self._validator = create_validator(
+            META_SCHEMA) if validator is None else validator
 
     def close(self):
         self._fp.close()
 
     def _http_header_str(self, http_header):
-        if http_header is None:
-            return None
         return '\r\n'.join([': '.join((k, v)) for k, v in http_header.items()])
 
     def _inner_header_str(self, inner_header):
-        return "\n".join([": ".join((str(k), str(v))) for
-                          k, v in inner_header.items() if v is not None])
+        o = StringIO.StringIO()
+        for k in self._validator.schema['properties']['inner_header'].keys():
+            if k in inner_header:
+                v = inner_header[k]
+                if v is None:
+                    continue
+                if isinstance(v, datetime):
+                    v = v.strftime(TIME_FORMAT)
+                o.write('\n'.join((str(k), str(v))))
 
-    def _inner_header(self, inner_header):
-        d = copy.deepcopy(INNER_HEADER)
-        if inner_header is not None:
-            d.update(inner_header)
-        if d['Fetch-Time'] is None:
-            d['Fetch-Time'] = time.strftime(_TIME_FORMAT,
-                                            time.localtime())
-        return d
+        l = o.tell() - 1
+        return o.read(l)
 
     def _compress_data(self, data):
         return zlib.compress(data)
 
-    def _process(self, item, skip_store=False):
-        http_header_str = self._http_header_str(item["http_header"])
-        inner_header = item['inner_header']
-
+    def _pre_process(self, record):
+        inner_header = record['inner_header']
         store_size = original_size = len(
-            item['data']) if item['data'] is not None else None
+            record['data']) if record['data'] is not None else -1
         inner_header['Original-Size'] = original_size
 
-        out_data = None
-        if original_size is not None:
-            if not skip_store:
-                if inner_header.get('Type', None) is None:
-                    if self._compress:
-                        inner_header['Type'] = COMPRESSED_TYPE
-                        out_data = self._compress_data(item['data'])
-                        store_size = len(out_data)
-                    else:
-                        inner_header['Type'] = FLAT_TYPE
-                        out_data = item['data']
+        if original_size >= 0:
+            data = record['data']
+            if inner_header.get('Type', None) is None:
+                if self._compress:
+                    inner_header['Type'] = 'compressed'
+                    data = self._compress_data(data)
+                    store_size = len(data)
                 else:
-                    out_data = item['data']
-            else:
-                store_size = None
+                    inner_header['Type'] = 'flat'
 
-        inner_header['Store-Size'] = store_size
+            record['data'] = data
+            inner_header['Store-Size'] = store_size
+        else:
+            for i in ['Original-Size', 'Store-Size']:
+                if i in inner_header:
+                    inner_header.pop(i)
+            if 'data' in record:
+                record.pop('data')
 
-        inner_header_str = self._inner_header_str(inner_header)
+        if record['http_header'] is None:
+            record.pop('http_header')
+
+        return record
+
+    def _dumps(self, record):
+
         o = StringIO.StringIO()
-        o.write(item['url'])
+        o.write(record['url'])
         o.write('\n')
+
+        inner_header_str = self._inner_header_str(record['inner_header'])
         o.write(inner_header_str)
         o.write('\n\n')
-        if http_header_str or store_size is not None:
+
+        http_header = record.get('http_header', None)
+        if http_header is None:
+            o.write('\r\n')
+        else:
+            http_header_str = self._http_header_str(http_header)
             o.write(http_header_str)
             o.write('\r\n\r\n')
-        if store_size is not None:
-            o.write(out_data)
+
+        data = record.get('data', None)
+        if data is not None:
+            o.write(data)
             o.write('\r\n')
+
         o.seek(0)
         return o.read()
 
-    def write(self, url, data=None, inner_header=None, http_header=None,
-              skip_store=False, flush=False):
-        if not is_url(url):
-            raise ValueError, 'Invalid url'
-        item = {'url': url}
-        item['inner_header'] = self._inner_header(inner_header)
-        item['http_header'] = http_header
-        item['data'] = data
-        store_data = self._process(item, skip_store)
+    def write(self, url, inner_header, http_header=None, data=None, flush=False):
+        record = {'url': url}
+        record['inner_header'] = inner_header
+        record['http_header'] = http_header
+        record['data'] = data
+
+        record = self._pre_process(record)
+        self._validator.validate(record)
+
+        store_data = self._dumps(record)
         self._fp.write(store_data, flush)
