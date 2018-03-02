@@ -60,7 +60,7 @@ def test_spage_reader_and_writer(tmpdir):
             url = base_url + str(idx)
             idx += 1
             f.write(url, inner_header=inner_header,
-                    http_header=http_header, data=data)
+                    http_header=http_header, data=data, flush=True)
         f.close()
         f = open_file(filename_prefix, 'r')
         idx = 0
