@@ -2,46 +2,31 @@ import copy
 import StringIO
 import time
 import zlib
-from datetime import datetime
 from collections import OrderedDict
+from datetime import datetime
 
 from os_rotatefile import open_file
 
 from default_schema import META_SCHEMA
-from validator import create_validator, TIME_FORMAT
+from validator import TIME_FORMAT, create_validator
 
 
-class SpageWriter(object):
-    def __init__(self, base_filename, roll_size='1G', compress=True, validator=None):
-        self._fp = open_file(base_filename, 'w', roll_size=roll_size)
+class RecordProcessor(object):
+    def process(self, record, **kwargs):
+        return record
+
+
+class SpageRecordProcessor(RecordProcessor):
+    def __init__(self, validator, compress=True):
+        self._validator = validator
         self._compress = compress
-        self._validator = create_validator(
-            META_SCHEMA) if validator is None else validator
-
-    def close(self):
-        self._fp.close()
-
-    def _http_header_str(self, http_header):
-        return '\r\n'.join([': '.join((k, v)) for k, v in http_header.items()])
-
-    def _inner_header_str(self, inner_header):
-        o = StringIO.StringIO()
-        for k in self._validator.schema['properties']['inner_header'].keys():
-            if k in inner_header:
-                v = inner_header[k]
-                if v is None:
-                    continue
-                if isinstance(v, datetime):
-                    v = v.strftime(TIME_FORMAT)
-                o.write('\n'.join((str(k), str(v))))
-
-        l = o.tell() - 1
-        return o.read(l)
 
     def _compress_data(self, data):
         return zlib.compress(data)
 
-    def _pre_process(self, record):
+    def process(self, record, **kwargs):
+        if not record['http_header']:
+            record.pop('http_header')
         inner_header = record['inner_header']
         store_size = original_size = len(
             record['data']) if record['data'] is not None else -1
@@ -63,16 +48,46 @@ class SpageWriter(object):
             for i in ['Original-Size', 'Store-Size']:
                 if i in inner_header:
                     inner_header.pop(i)
-            if 'data' in record:
-                record.pop('data')
+            record.pop('data')
 
-        if record['http_header'] is None:
-            record.pop('http_header')
-
+        self._validator.validate(record)
         return record
 
-    def _dumps(self, record):
 
+class RecordEncoder(object):
+    def dumps(self, record, **kwargs):
+        raise NotImplementedError
+
+
+class SpageRecordEncoder(RecordEncoder):
+
+    def __init__(self, allowed_inner_header_keys=None):
+        self._inner_header_keys = allowed_inner_header_keys
+
+    def _http_header_str(self, http_header):
+        if not http_header:
+            return None
+        return '\r\n'.join([': '.join((k.strip(), v.strip())) for k, v in http_header.items()])
+
+    def _inner_header_str(self, inner_header):
+        o = StringIO.StringIO()
+        keys = self._inner_header_keys if self._inner_header_keys \
+            else inner_header.keys()
+        for k in keys:
+            if k in inner_header:
+                v = inner_header[k]
+                if v is None:
+                    continue
+                if isinstance(v, datetime):
+                    v = v.strftime(TIME_FORMAT)
+                o.write(': '.join((str(k).strip(), str(v).strip())))
+                o.write('\n')
+
+        data_length = o.tell() - 1
+        o.seek(0)
+        return o.read(data_length)
+
+    def dumps(self, record, **kwargs):
         o = StringIO.StringIO()
         o.write(record['url'])
         o.write('\n')
@@ -81,15 +96,15 @@ class SpageWriter(object):
         o.write(inner_header_str)
         o.write('\n\n')
 
-        http_header = record.get('http_header', None)
-        if http_header is None:
+        http_header_str = self._http_header_str(
+            record.get('http_header', None))
+        if not http_header_str:
             o.write('\r\n')
         else:
-            http_header_str = self._http_header_str(http_header)
             o.write(http_header_str)
             o.write('\r\n\r\n')
 
-        data = record.get('data', None)
+        data = record.get("data", None)
         if data is not None:
             o.write(data)
             o.write('\r\n')
@@ -97,14 +112,60 @@ class SpageWriter(object):
         o.seek(0)
         return o.read()
 
-    def write(self, url, inner_header, http_header=None, data=None, flush=False):
-        record = {'url': url}
-        record['inner_header'] = inner_header
-        record['http_header'] = http_header
-        record['data'] = data
 
-        record = self._pre_process(record)
-        self._validator.validate(record)
+class RecordWriter(object):
+    def write(self, f, url, inner_header=None, http_header=None, data=None):
+        raise NotImplementedError
 
-        store_data = self._dumps(record)
-        self._fp.write(store_data, flush)
+
+class SpageRecordWriter(RecordWriter):
+    def __init__(self, processor, encoder):
+        self._processor = processor
+        self._encoder = encoder
+
+    def write(self, f, url, inner_header=None, http_header=None, data=None):
+        record = {}
+        record["url"] = url
+        record["inner_header"] = {} if inner_header is None else copy.deepcopy(
+            inner_header)
+        record["http_header"] = {} if http_header is None else copy.deepcopy(
+            http_header)
+        record["data"] = data
+
+        record = self._processor.process(record)
+        f.write(self._encoder.dumps(record))
+
+
+def create_writer(**kwargs):
+    validator = kwargs.get('validator', None)
+    if validator is None:
+        validator = create_validator(
+            META_SCHEMA) if validator is None else validator
+    processor = SpageRecordProcessor(validator, kwargs.get('compress', True))
+    allowed_keys = validator.schema['properties']['inner_header']['properties'].keys(
+    )
+    encoder = SpageRecordEncoder(allowed_keys)
+    return SpageRecordWriter(processor, encoder)
+
+
+class SpageWriter(object):
+    def __init__(self, base_filename, roll_size='1G', compress=True, validator=None):
+        self._fp = open_file(base_filename, 'w', roll_size=roll_size)
+        self._record_writer = create_writer(
+            validator=validator, compress=compress)
+
+    def close(self):
+        self._fp.close()
+
+    def write(self, url, inner_header=None, http_header=None, data=None, flush=False):
+        self._record_writer.write(
+            self._fp, url,
+            inner_header=inner_header,
+            http_header=http_header,
+            data=data)
+
+        if flush:
+            self._fp.flush()
+
+
+write = create_writer().write

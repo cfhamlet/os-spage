@@ -1,6 +1,6 @@
 import sys
-from spage_reader import SpageReader
-from spage_writer import SpageWriter
+from spage_reader import SpageReader, read
+from spage_writer import SpageWriter, write
 
 
 def open_file(name, mode, **kwargs):
