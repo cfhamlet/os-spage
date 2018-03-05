@@ -1,8 +1,11 @@
 # os-spage
 [![Build Status](https://www.travis-ci.org/cfhamlet/os-spage.svg?branch=master)](https://www.travis-ci.org/cfhamlet/os-spage)
 [![codecov](https://codecov.io/gh/cfhamlet/os-spage/branch/master/graph/badge.svg)](https://codecov.io/gh/cfhamlet/os-spage)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/os-spage.svg)](https://pypi.python.org/pypi/os-spage)
+[![PyPI](https://img.shields.io/pypi/v/os-spage.svg)](https://pypi.python.org/pypi/os-spage)
 
-Read and write Spage. (Python2.7)
+
+Read and write Spage.
 
 Spage is an incompact data structure to specify fetched record. Generally speaking, it contains four sub-block: *url*, *inner_header*, *http_header*, and *data*.
 
