@@ -10,12 +10,12 @@ def test_write_invalid_data(tmpdir):
     with tmpdir.as_cwd():
         f = open_file('test', 'w')
         with pytest.raises(ValidationError):
-            f.write(url='abc', inner_header={'batch-ID': 'test'})
+            f.write(url='abc', inner_header={'batchID': 'test'})
 
 
 def check_inner_header(w_inner_header, r_inner_header):
     if not w_inner_header:
-        assert r_inner_header['batch-ID'] == '__CHANGE_ME__'
+        assert r_inner_header['batchID'] == '__CHANGE_ME__'
         return
 
     for k, v in w_inner_header.iteritems():
@@ -42,9 +42,9 @@ def check_data(w_data, r_data):
 RECORDS = [
     # inner_header, http_header, data
     (None, None, None),
-    ({'batch-ID': 'test'}, {'k1': 'v1'}, 'hello'),
-    ({'batch-ID': 'test'}, {}, 'hello'),
-    ({'batch-ID': 'test'}, {'k1': 'v1'}, None),
+    ({'batchID': 'test'}, {'k1': 'v1'}, 'hello'),
+    ({'batchID': 'test'}, {}, 'hello'),
+    ({'batchID': 'test'}, {'k1': 'v1'}, None),
     ({}, {'k1': 'v1'}, 'hello'),
     ({}, {'k1': 'v1'}, None),
 ]

@@ -33,7 +33,7 @@ INNER_HEADER_SCHEMA = {
         ("Store-Size", {  # store size, autofill
             "type": "number",
         }),
-        ("batch-ID", {  # batch identity
+        ("batchID", {  # batch identity
             "type": "string",
             "minLength": 3,
             "default": '__CHANGE_ME__',
