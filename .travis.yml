@@ -1,17 +1,14 @@
 language: python
 sudo: false
-python:
-- '2.7'
+matrix:
+  include:
+    - python: 2.7
+      env: TOXENV=py27
+    - env: TOXENV=coverage
 install:
-- pip install -e .
-- pip install pytest
-- pip install pytest-env
-- pip install coverage
-- pip install codecov
+- pip install -U pip tox codecov
 script:
-- coverage erase
-- coverage run -m pytest
-- coverage combine
+- tox
 after_success:
 - codecov
 deploy:
@@ -21,3 +18,4 @@ deploy:
     secure: 0655wpeTTkk7xlDVay8C35xr2A83xNoq9bFXUSknOHOU9Hy3F8DPMV1AAWpffQ30IYBaf+FeXl7LwPz8eZZvpJPjXJMK9s1ElJy7VAHnVW75JMyxQNt7JyuD6+T+cd6tWeWfwiVEdcOT2ipbaPgwMpJ5Znpx1VghELR2u08b7YpRnTyUgZUZyhUoBvgzEixmy4VslAZ7AvxVYEaDRV8bTvzAx3IeT4im84eCDa/Vlw8152HRaeLfrrhbXyWIfg0nbV2bFfh5zGIvR2SwjWhys5/DHZS2AvVAUey/LrMdoHh+WSqKs1hsH/boUDgWQEbMaIbTvVRcEEzBqjdbd06tQbyvtl864823OsJ5hEa1qwV7mFjGjKX9+WKG+UlNAwE4lZ9cwzBHdkmY6ucIyyQ/moVXy2Hk59Qzv/jkA59P/kyIghBRhZdwtc4JVa7Q306X6qf9wj9cY768lKfT58jg/usMKgvMrdHWjvLmNeyf8/ErT1YzwmJlDO3FuOoHpBn4nTftEihZ+yoRrPMgCpT+YKbBoPs200/5CFY8j1N4ZD8+ocEqq8hWqK7Q15DJssMp+kjgnvmaPBnUbBe8j57OVqbz8aOIBaR0dGr5anjwczJbGf1vObbQp5dG8CPNhG5eo1Fooe/xe9mc5z8TpyBr9qMgn4iVqFxRcymU6ts27jw=
   on:
     tags: true
+    condition: ${TOXENV} == py27
