@@ -27,6 +27,7 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
 
 # Usage
   * Write to size-rotate-file
+  
   ```
     import urllib2
     from os_spage import open_file
@@ -43,7 +44,9 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
     f.write(url, inner_header=req_headers, http_header=res_headers, data=html, flush=True)
     f.close()
   ```
+  
   * Read from size-rotate-file
+  
   ```
     from os_spage import open_file
 
@@ -53,7 +56,9 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
         print record
     f.close()
   ```
+  
   * R/W with other file-like object
+  
   ```
     import StringIO
     from os_spage import read, write
@@ -64,11 +69,10 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
     s.seek(0)
     for record in read(s):
         print record
-
   ```
 
 # Unit Tests
-  `$ tox`
+`$ tox`
 
 # License
 MIT licensed.
