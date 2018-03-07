@@ -20,7 +20,7 @@ def simple_check_url(url):
     return len(url) > 10 and (url.startswith("http://") or url.startswith("https://"))
 
 
-ERROR_TYPES = {"HTTP", "SSL", "RULE", "SERVER"}
+ERROR_TYPES = {"HTTP", "SSL", "RULE", "SERVER", "DNS"}
 
 
 @FormatChecker.cls_checks("error_reason")
