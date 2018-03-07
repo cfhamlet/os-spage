@@ -1,4 +1,5 @@
 # os-spage
+
 [![Build Status](https://www.travis-ci.org/cfhamlet/os-spage.svg?branch=master)](https://www.travis-ci.org/cfhamlet/os-spage)
 [![codecov](https://codecov.io/gh/cfhamlet/os-spage/branch/master/graph/badge.svg)](https://codecov.io/gh/cfhamlet/os-spage)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/os-spage.svg)](https://pypi.python.org/pypi/os-spage)
@@ -23,9 +24,11 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
  
 
 # Install
-  `pip install os-spage`
+
+`pip install os-spage`
 
 # Usage
+
   * Write to size-rotate-file
   
   ```
@@ -72,7 +75,9 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
   ```
 
 # Unit Tests
+
 `$ tox`
 
 # License
+
 MIT licensed.
