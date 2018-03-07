@@ -19,7 +19,7 @@ We use dict type to implements Spage. A predefined [schema](https://github.com/c
 
 It is common to write Spage to size-rotate-file, we choice [os-rotatefile](https://github.com/cfhamlet/os-rotatefile.git) as default back-end.
 
-__Attension__: os-spage should not be used for strict serialization/deserialization purpose, it will lose type info when written, all data will be read as string after all.
+__Notice__: os-spage should not be used for strict serialization/deserialization purpose, it will lose type info when written, all data will be read as string after all.
  
 
 # Install
