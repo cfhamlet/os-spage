@@ -60,7 +60,7 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
     f.close()
   ```
   
-  * R/W with other file-like object
+  * R/W with other file-like object
   
   ```
     import StringIO
