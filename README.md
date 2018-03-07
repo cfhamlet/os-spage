@@ -53,7 +53,7 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
         print record
     f.close()
   ```
-  * R/W from other file-like object
+  * R/W with other file-like object
   ```
     import StringIO
     from os_spage import read, write
