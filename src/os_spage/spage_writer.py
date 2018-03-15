@@ -9,9 +9,13 @@ from os_rotatefile import open_file
 
 from default_schema import META_SCHEMA
 from validator import TIME_FORMAT, create_validator
+import abc
 
 
 class RecordProcessor(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
     def process(self, record, **kwargs):
         return record
 
@@ -55,6 +59,9 @@ class SpageRecordProcessor(RecordProcessor):
 
 
 class RecordEncoder(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
     def dumps(self, record, **kwargs):
         raise NotImplementedError
 
@@ -114,6 +121,9 @@ class SpageRecordEncoder(RecordEncoder):
 
 
 class RecordWriter(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
     def write(self, f, url, inner_header=None, http_header=None, data=None):
         raise NotImplementedError
 
