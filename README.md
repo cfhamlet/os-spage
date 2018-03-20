@@ -20,7 +20,7 @@ We use dict type to implements Spage. A predefined [schema](https://github.com/c
 
 It is common to write Spage to size-rotate-file, we choice [os-rotatefile](https://github.com/cfhamlet/os-rotatefile.git) as default back-end.
 
-__Notice__: os-spage should not be used for strict serialization/deserialization purpose, it will lose type info when written, all data will be read as string after all.
+__Notice__: os-spage should not be used for strict serialization/deserialization purpose, it will lose type info when written, all data will be read as string(unicode python2) after all.
  
 
 # Install
@@ -32,19 +32,15 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
   * Write to size-rotate-file
   
   ```
-    import urllib2
     from os_spage import open_file
 
     url = 'http://www.google.com/'
-    req_headers = {'User-Agent': 'Mozilla/5.0'}
-    req = urllib2.Request(url, None, req_headers)
-
-    response = urllib2.urlopen(req)
-    html = response.read()
-    res_headers = response.headers.dict
+    inner_header = {'User-Agent': 'Mozilla/5.0', 'batchID': 'test'}
+    http_header = {'Content-Type': 'text/html'}
+    data = b"Hello world!"
 
     f = open_file('file', 'w', roll_size='1G', compress=True)
-    f.write(url, inner_header=req_headers, http_header=res_headers, data=html, flush=True)
+    f.write(url, inner_header=inner_header, http_header=http_header, data=data, flush=True)
     f.close()
   ```
   
@@ -56,7 +52,7 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
     f = open_file('file', 'r')
 
     for record in f.read():
-        print record
+        print(record)
     f.close()
   ```
   
@@ -71,7 +67,7 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
 
     s.seek(0)
     for record in read(s):
-        print record
+        print(record)
   ```
 
 # Unit Tests
