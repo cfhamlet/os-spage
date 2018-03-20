@@ -5,6 +5,8 @@ from jsonschema import (Draft4Validator, FormatChecker, ValidationError,
                         validators)
 from jsonschema.compat import str_types
 
+from .compat import iteritems
+
 TIME_FORMAT = "%a %b %d %X %Y"
 
 
@@ -36,7 +38,7 @@ def extend_with_default(validator_class):
     validate_properties = validator_class.VALIDATORS["properties"]
 
     def set_defaults(validator, properties, instance, schema):
-        for property, subschema in properties.iteritems():
+        for property, subschema in iteritems(properties):
             if "default" in subschema:
                 o = subschema["default"]
                 if callable(o):
@@ -55,7 +57,7 @@ def extend_with_default(validator_class):
 
 DefaultPropertyDraft4Validator = extend_with_default(Draft4Validator)
 
-EXTRA_TYPES = {u'datetime': datetime}
+EXTRA_TYPES = {'datetime': datetime, 'bytes': bytes}
 
 
 def create_validator(schema, extra_types=None, format_checker=None):

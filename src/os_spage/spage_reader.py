@@ -1,10 +1,9 @@
-import StringIO
 
 from os_rotatefile import open_file
 
-from validator import simple_check_url
+from .validator import simple_check_url
 
-TAG_STORE_SIZE = 'Store-Size'
+TAG_STORE_SIZE = u'Store-Size'
 
 
 def read(fp):
@@ -29,17 +28,17 @@ class Reader(object):
 
     def _generate(self):
         d = {}
-        d['url'] = self._url
-        d['inner_header'] = self._inner_header
-        d['http_header'] = self._http_header
-        d['data'] = self._data
+        d[u'url'] = self._url
+        d[u'inner_header'] = self._inner_header
+        d[u'http_header'] = self._http_header
+        d[u'data'] = self._data
         return d
 
     def _read_inner_header(self):
         line = self._fp.readline()
         if not line:
             raise StopIteration
-        line = line.strip()
+        line = line.decode().strip()
         line_length = len(line)
         if line_length <= 0 and self._inner_header:
             self._read = self._read_http_header
@@ -49,7 +48,7 @@ class Reader(object):
             self._reset()
             self._url = line
         else:
-            d = line.find(":")
+            d = line.find(u":")
             if d > 0:
                 key = line[0:d].strip()
                 value = line[d + 1:].strip()
@@ -60,13 +59,14 @@ class Reader(object):
         line = self._fp.readline()
         if not line:
             raise StopIteration
-        if not line.strip():
+        line = line.decode().strip()
+        if not line:
             self._read = self._read_data
         elif simple_check_url(line):
             self._url_latest = line.strip()
             self._read = self._read_data
         else:
-            d = line.find(":")
+            d = line.find(u":")
             if d > 0:
                 key = line[0:d].strip()
                 value = line[d + 1:].strip()

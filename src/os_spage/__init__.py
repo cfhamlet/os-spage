@@ -1,11 +1,11 @@
 import sys
-from spage_reader import SpageReader, read
-from spage_writer import SpageWriter, write
+from .spage_reader import SpageReader, read
+from .spage_writer import SpageWriter, write
 
 
 def open_file(name, mode, **kwargs):
     def not_support(name, **kwargs):
-        raise ValueError, "mode must be 'r' or 'w'"
+        raise ValueError("mode must be 'r' or 'w'")
     r = {'w': SpageWriter, 'r': SpageReader}.get(mode, not_support)
     return r(name, **kwargs)
 

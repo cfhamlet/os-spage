@@ -2,8 +2,8 @@ import zlib
 
 import pytest
 from jsonschema import ValidationError
-
 from os_spage import open_file, read, write
+from os_spage.compat import iteritems
 
 
 def test_write_invalid_data(tmpdir):
@@ -18,7 +18,7 @@ def check_inner_header(w_inner_header, r_inner_header):
         assert r_inner_header['batchID'] == '__CHANGE_ME__'
         return
 
-    for k, v in w_inner_header.iteritems():
+    for k, v in iteritems(w_inner_header):
         k = str(k)
         if k not in {'Store-Size', 'Original-Size'}:
             assert r_inner_header[k] == str(v)
@@ -28,7 +28,7 @@ def check_http_header(w_http_header, r_http_header):
     if w_http_header is None:
         assert r_http_header == {}
         return
-    for k, v in w_http_header.iteritems():
+    for k, v in iteritems(w_http_header):
         assert r_http_header[str(k)] == str(v)
 
 
@@ -42,10 +42,10 @@ def check_data(w_data, r_data):
 RECORDS = [
     # inner_header, http_header, data
     (None, None, None),
-    ({'batchID': 'test'}, {'k1': 'v1'}, 'hello'),
-    ({'batchID': 'test'}, {}, 'hello'),
+    ({'batchID': 'test'}, {'k1': 'v1'}, b'hello'),
+    ({'batchID': 'test'}, {}, b'hello'),
     ({'batchID': 'test'}, {'k1': 'v1'}, None),
-    ({}, {'k1': 'v1'}, 'hello'),
+    ({}, {'k1': 'v1'}, b'hello'),
     ({}, {'k1': 'v1'}, None),
 ]
 
@@ -78,7 +78,7 @@ def test_genergal_read_and_write(tmpdir):
     base_url = "http://www.test.com/"
     with tmpdir.as_cwd():
         filename = 'test_file'
-        f = open(filename, 'w')
+        f = open(filename, 'wb')
         idx = 0
         for inner_header, http_header, data in RECORDS:
             url = base_url + str(idx)
@@ -86,7 +86,7 @@ def test_genergal_read_and_write(tmpdir):
             write(f, url, inner_header=inner_header,
                   http_header=http_header, data=data)
         f.close()
-        f = open(filename, 'r')
+        f = open(filename, 'rb')
         idx = 0
         for record in read(f):
             inner_header, http_header, data = RECORDS[idx]

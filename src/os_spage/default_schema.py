@@ -95,7 +95,7 @@ META_SCHEMA = {
             "type": "object"
         },
         "data": {
-            "type": "string",
+            "type": "bytes",
         },
     },
     "required": ["url", "inner_header"],

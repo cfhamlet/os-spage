@@ -63,10 +63,10 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
   * R/W with other file-like object
   
   ```
-    import StringIO
+    from io import BytesIO
     from os_spage import read, write
 
-    s = StringIO.StringIO()
+    s = BytesIO()
     write(s, "http://www.google.com/")
 
     s.seek(0)

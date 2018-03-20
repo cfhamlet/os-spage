@@ -1,15 +1,16 @@
+import abc
 import copy
-import StringIO
 import time
 import zlib
 from collections import OrderedDict
 from datetime import datetime
+from io import BytesIO
 
 from os_rotatefile import open_file
 
-from default_schema import META_SCHEMA
-from validator import TIME_FORMAT, create_validator
-import abc
+from .compat import StringIO, iteritems
+from .default_schema import META_SCHEMA
+from .validator import TIME_FORMAT, create_validator
 
 
 class RecordProcessor(object):
@@ -74,10 +75,11 @@ class SpageRecordEncoder(RecordEncoder):
     def _http_header_str(self, http_header):
         if not http_header:
             return None
-        return '\r\n'.join([': '.join((k.strip(), v.strip())) for k, v in http_header.items()])
+        return '\r\n'.join([': '.join((k.strip(), v.strip()))
+                            for k, v in iteritems(http_header)])
 
     def _inner_header_str(self, inner_header):
-        o = StringIO.StringIO()
+        o = StringIO()
         keys = self._inner_header_keys if self._inner_header_keys \
             else inner_header.keys()
         for k in keys:
@@ -95,26 +97,26 @@ class SpageRecordEncoder(RecordEncoder):
         return o.read(data_length)
 
     def dumps(self, record, **kwargs):
-        o = StringIO.StringIO()
-        o.write(record['url'])
-        o.write('\n')
+        o = BytesIO()
+        o.write(record['url'].encode())
+        o.write(b'\n')
 
         inner_header_str = self._inner_header_str(record['inner_header'])
-        o.write(inner_header_str)
-        o.write('\n\n')
+        o.write(inner_header_str.encode())
+        o.write(b'\n\n')
 
         http_header_str = self._http_header_str(
             record.get('http_header', None))
         if not http_header_str:
-            o.write('\r\n')
+            o.write(b'\r\n')
         else:
-            o.write(http_header_str)
-            o.write('\r\n\r\n')
+            o.write(http_header_str.encode())
+            o.write(b'\r\n\r\n')
 
         data = record.get("data", None)
         if data is not None:
             o.write(data)
-            o.write('\r\n')
+            o.write(b'\r\n')
 
         o.seek(0)
         return o.read()
@@ -134,6 +136,9 @@ class SpageRecordWriter(RecordWriter):
         self._encoder = encoder
 
     def write(self, f, url, inner_header=None, http_header=None, data=None):
+        if not isinstance(data, (bytes, type(None))):
+            raise ValueError(
+                "bytes-like data is required, not {}".format(type(data).__name__))
         record = {}
         record["url"] = url
         record["inner_header"] = {} if inner_header is None else copy.deepcopy(
