@@ -38,7 +38,10 @@ class Reader(object):
         line = self._fp.readline()
         if not line:
             raise StopIteration
-        line = line.decode().strip()
+        try:
+            line = line.decode().strip()
+        except Exception as e:
+            return self._read()
         line_length = len(line)
         if line_length <= 0 and self._inner_header:
             self._read = self._read_http_header
@@ -59,7 +62,10 @@ class Reader(object):
         line = self._fp.readline()
         if not line:
             raise StopIteration
-        line = line.decode().strip()
+        try:
+            line = line.decode().strip()
+        except Exception as e:
+            return self._read()
         if not line:
             self._read = self._read_data
         elif simple_check_url(line):
