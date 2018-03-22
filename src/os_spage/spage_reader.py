@@ -1,9 +1,9 @@
-
 from os_rotatefile import open_file
 
 from .validator import simple_check_url
 
 TAG_STORE_SIZE = u'Store-Size'
+DEFAULT_ENCODING = 'utf-8'
 
 
 def read(fp):
@@ -39,7 +39,7 @@ class Reader(object):
         if not line:
             raise StopIteration
         try:
-            line = line.decode().strip()
+            line = line.decode(DEFAULT_ENCODING).strip()
         except Exception as e:
             return self._read()
         line_length = len(line)
@@ -63,7 +63,7 @@ class Reader(object):
         if not line:
             raise StopIteration
         try:
-            line = line.decode().strip()
+            line = line.decode(DEFAULT_ENCODING).strip()
         except Exception as e:
             return self._read()
         if not line:

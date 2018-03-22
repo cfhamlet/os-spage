@@ -12,6 +12,8 @@ from .compat import StringIO, iteritems
 from .default_schema import META_SCHEMA
 from .validator import TIME_FORMAT, create_validator
 
+DEFAULT_ENCODING = 'utf-8'
+
 
 class RecordProcessor(object):
     __metaclass__ = abc.ABCMeta
@@ -98,11 +100,11 @@ class SpageRecordEncoder(RecordEncoder):
 
     def dumps(self, record, **kwargs):
         o = BytesIO()
-        o.write(record['url'].encode())
+        o.write(record['url'].encode(DEFAULT_ENCODING))
         o.write(b'\n')
 
         inner_header_str = self._inner_header_str(record['inner_header'])
-        o.write(inner_header_str.encode())
+        o.write(inner_header_str.encode(DEFAULT_ENCODING))
         o.write(b'\n\n')
 
         http_header_str = self._http_header_str(
@@ -110,7 +112,7 @@ class SpageRecordEncoder(RecordEncoder):
         if not http_header_str:
             o.write(b'\r\n')
         else:
-            o.write(http_header_str.encode())
+            o.write(http_header_str.encode(DEFAULT_ENCODING))
             o.write(b'\r\n\r\n')
 
         data = record.get("data", None)
