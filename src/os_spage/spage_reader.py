@@ -2,7 +2,8 @@ from os_rotatefile import open_file
 
 from .validator import simple_check_url
 
-TAG_STORE_SIZE = 'Store-Size'
+COLON=u":"
+TAG_STORE_SIZE = u'Store-Size'
 DEFAULT_ENCODING = 'utf-8'
 
 
@@ -28,10 +29,10 @@ class Reader(object):
 
     def _generate(self):
         d = {}
-        d['url'] = self._url
-        d['inner_header'] = self._inner_header
-        d['http_header'] = self._http_header
-        d['data'] = self._data
+        d[u'url'] = self._url
+        d[u'inner_header'] = self._inner_header
+        d[u'http_header'] = self._http_header
+        d[u'data'] = self._data
         return d
 
     def _read_inner_header(self):
@@ -51,7 +52,7 @@ class Reader(object):
             self._reset()
             self._url = line
         else:
-            d = line.find(":")
+            d = line.find(COLON)
             if d > 0:
                 key = line[0:d].strip()
                 value = line[d + 1:].strip()
@@ -72,7 +73,7 @@ class Reader(object):
             self._url_latest = line.strip()
             self._read = self._read_data
         else:
-            d = line.find(":")
+            d = line.find(COLON)
             if d > 0:
                 key = line[0:d].strip()
                 value = line[d + 1:].strip()
