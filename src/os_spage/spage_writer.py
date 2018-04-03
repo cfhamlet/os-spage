@@ -157,8 +157,7 @@ def create_writer(**kwargs):
     validator = kwargs.get('validator', None)
     validator = create_validator(META_SCHEMA) if validator is None else validator
     processor = SpageRecordProcessor(validator, kwargs.get('compress', True))
-    allowed_keys = validator.schema['properties']['inner_header']['properties'].keys(
-    )
+    allowed_keys = validator.schema['properties']['inner_header']['properties'].keys()
     encoder = SpageRecordEncoder(allowed_keys)
     return SpageRecordWriter(processor, encoder)
 
