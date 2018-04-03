@@ -155,9 +155,7 @@ class SpageRecordWriter(RecordWriter):
 
 def create_writer(**kwargs):
     validator = kwargs.get('validator', None)
-    if validator is None:
-        validator = create_validator(
-            META_SCHEMA) if validator is None else validator
+    validator = create_validator(META_SCHEMA) if validator is None else validator
     processor = SpageRecordProcessor(validator, kwargs.get('compress', True))
     allowed_keys = validator.schema['properties']['inner_header']['properties'].keys(
     )
