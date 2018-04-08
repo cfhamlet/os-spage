@@ -22,7 +22,7 @@ def simple_check_url(url):
     return len(url) > 10 and (url.startswith("http://") or url.startswith("https://"))
 
 
-ERROR_TYPES = {"HTTP", "SSL", "RULE", "SERVER", "DNS"}
+ERROR_TYPES = set(["HTTP", "SSL", "RULE", "SERVER", "DNS"])
 
 
 @FormatChecker.cls_checks("error_reason")
@@ -31,7 +31,7 @@ def check_error_reason(err_string):
     if len(c) != 2:
         return False
 
-    return c[0] in ERROR_TYPES and c[1].sidigit()
+    return c[0] in ERROR_TYPES and c[1].lstrip('-').isdigit()
 
 
 def extend_with_default(validator_class):
