@@ -1,21 +1,41 @@
 from collections import OrderedDict
 from datetime import datetime
 
-RECORD_TYPES = {"flat", "deleted", "compressed"}
+class RecordTypes(object):
+    FLAT       = 'flat'
+    DELETED    = 'deleted'
+    COMPRESSED = 'compressed'
+
+
+class InnerHeaderKeys(object):
+    VERSION           = 'Version'
+    TYPE              = 'Type'
+    FETCH_TIME        = 'Fetch-Time'
+    ORIGINAL_SIZE     = 'Original-Size'
+    STORE_SIZE        = 'Store-Size'
+    BATCH_ID          = 'batchID'
+    ATTACH            = 'attach'
+    IP_ADDRESS        = 'IP-Address'
+    SPIDER_ADDRESS    = 'Spider-Address'
+    DIGEST            = 'Digest'
+    USER_AGENT        = 'User-Agent'
+    FETCH_IP          = 'Fetch-IP'
+    NODE_FETCH_TIME   = 'Node-Fetch-Time'
+    ERROR_REASON      = 'Error-Reason'
 
 
 INNER_HEADER_SCHEMA = {
     "type": "object",
     "properties": OrderedDict([
-        ("Version", {
+        (InnerHeaderKeys.VERSION, {
             "type": "string",
             "default": "1.2",
         }),
-        ("Type", {  # autofill or specify
+        (InnerHeaderKeys.TYPE, {  # autofill or specify
             "type": "string",
-            "enum": RECORD_TYPES,
+            "enum": set([getattr(RecordTypes, i) for i in dir(RecordTypes) if not i.startswith('_')]) ,
         }),
-        ("Fetch-Time", {  # record store time
+        (InnerHeaderKeys.FETCH_TIME, {  # record store time
             "anyOf": [
                 {
                     "type": "datetime",
@@ -27,44 +47,44 @@ INNER_HEADER_SCHEMA = {
             ],
             "default": datetime.now,
         }),
-        ("Original-Size", {  # data(html) size, autofill
+        (InnerHeaderKeys.ORIGINAL_SIZE, {  # data(html) size, autofill
             "type": "number",
         }),
-        ("Store-Size", {  # store size, autofill
+        (InnerHeaderKeys.STORE_SIZE, {  # store size, autofill
             "type": "number",
         }),
-        ("batchID", {  # batch identity
+        (InnerHeaderKeys.BATCH_ID, {  # batch identity
             "type": "string",
             "minLength": 3,
             "default": '__CHANGE_ME__',
         }),
-        ("attach", {
+        (InnerHeaderKeys.ATTACH, {
             "type": "string",
         }),
-        ("IP-Address", {  # remote host ip
+        (InnerHeaderKeys.IP_ADDRESS, {  # remote host ip
             "type": "string",
             "format": "ipv4",
             "default": "0.0.0.0",
         }),
-        ("Spider-Address", {  # spider node identity
+        (InnerHeaderKeys.SPIDER_ADDRESS, {  # spider node identity
             "type": "string",
             "default": "0.0.0.0",
         }),
-        ("Digest", {  # can be html md5
+        (InnerHeaderKeys.DIGEST, {  # can be html md5
             "type": "string",
             "default": "0" * 32,
             "maxLength": 32,
             "minLength": 32,
         }),
-        ("User-Agent", {
+        (InnerHeaderKeys.USER_AGENT, {
             "type": "string",
         }),
-        ("Fetch-IP", {  # generate page machine ip
+        (InnerHeaderKeys.FETCH_IP, {  # generate page machine ip
             "type": "string",
             "format": "ipv4",
             "default": "0.0.0.0",
         }),
-        ("Node-Fetch-Time", {  # real fetch time
+        (InnerHeaderKeys.NODE_FETCH_TIME, {  # real fetch time
             "anyOf": [
                 {
                     "type": "datetime",
@@ -75,28 +95,34 @@ INNER_HEADER_SCHEMA = {
                 },
             ]
         }),
-        ("Error-Reason", {
+        (InnerHeaderKeys.ERROR_REASON, {
             "type": "string",
             "format": "error_reaseon",
         }),
     ]),
 }
 
+class SpageKeys(object):
+    URL          = 'url'
+    INNER_HEADER = 'inner_header'
+    HTTP_HEADER  = 'http_header'
+    DATA         = 'data'
+
 
 META_SCHEMA = {
     "type": "object",
     "properties": {
-        "url": {
+        SpageKeys.URL: {
             "type": "string",
             "format": "url",
         },
-        "inner_header": INNER_HEADER_SCHEMA,
-        "http_header": {
+        SpageKeys.INNER_HEADER: INNER_HEADER_SCHEMA,
+        SpageKeys.HTTP_HEADER: {
             "type": "object"
         },
-        "data": {
+        SpageKeys.DATA: {
             "type": "bytes",
         },
     },
-    "required": ["url", "inner_header"],
+    "required": [SpageKeys.URL, SpageKeys.INNER_HEADER],
 }

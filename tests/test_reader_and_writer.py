@@ -4,23 +4,25 @@ import pytest
 from jsonschema import ValidationError
 from os_spage import open_file, read, write
 from os_spage.compat import iteritems
+from os_spage.default_schema import InnerHeaderKeys as I_KEYS
+from os_spage.default_schema import SpageKeys as S_KEYS
 
 
 def test_write_invalid_data(tmpdir):
     with tmpdir.as_cwd():
         f = open_file('test', 'w')
         with pytest.raises(ValidationError):
-            f.write(url='abc', inner_header={'batchID': 'test'})
+            f.write(url='abc', inner_header={I_KEYS.BATCH_ID: 'test'})
 
 
 def check_inner_header(w_inner_header, r_inner_header):
     if not w_inner_header:
-        assert r_inner_header['batchID'] == '__CHANGE_ME__'
+        assert r_inner_header[I_KEYS.BATCH_ID] == '__CHANGE_ME__'
         return
 
     for k, v in iteritems(w_inner_header):
         k = str(k)
-        if k not in {'Store-Size', 'Original-Size'}:
+        if k != I_KEYS.STORE_SIZE:
             assert r_inner_header[k] == str(v)
 
 
@@ -42,9 +44,10 @@ def check_data(w_data, r_data):
 RECORDS = [
     # inner_header, http_header, data
     (None, None, None),
-    ({'batchID': 'test'}, {'k1': 'v1'}, b'hello'),
-    ({'batchID': 'test'}, {}, b'hello'),
-    ({'batchID': 'test'}, {'k1': 'v1'}, None),
+    ({I_KEYS.BATCH_ID: 'test'}, {'k1': 'v1'}, b'hello'),
+    ({I_KEYS.BATCH_ID: 'test'}, {}, b'hello'),
+    ({I_KEYS.BATCH_ID: 'test', I_KEYS.ORIGINAL_SIZE: 3}, {}, b'hello'),
+    ({I_KEYS.BATCH_ID: 'test'}, {'k1': 'v1'}, None),
     ({}, {'k1': 'v1'}, b'hello'),
     ({}, {'k1': 'v1'}, None),
 ]
@@ -68,10 +71,10 @@ def test_spage_reader_and_writer(tmpdir):
             inner_header, http_header, data = RECORDS[idx]
             url = base_url + str(idx)
             idx += 1
-            assert url == record['url']
-            check_inner_header(inner_header, record['inner_header'])
-            check_http_header(http_header, record['http_header'])
-            check_data(data, record['data'])
+            assert url == record[S_KEYS.URL]
+            check_inner_header(inner_header, record[S_KEYS.INNER_HEADER])
+            check_http_header(http_header, record[S_KEYS.HTTP_HEADER])
+            check_data(data, record[S_KEYS.DATA])
 
 
 def test_genergal_read_and_write(tmpdir):
@@ -92,7 +95,7 @@ def test_genergal_read_and_write(tmpdir):
             inner_header, http_header, data = RECORDS[idx]
             url = base_url + str(idx)
             idx += 1
-            assert url == record['url']
-            check_inner_header(inner_header, record['inner_header'])
-            check_http_header(http_header, record['http_header'])
-            check_data(data, record['data'])
+            assert url == record[S_KEYS.URL]
+            check_inner_header(inner_header, record[S_KEYS.INNER_HEADER])
+            check_http_header(http_header, record[S_KEYS.HTTP_HEADER])
+            check_data(data, record[S_KEYS.DATA])

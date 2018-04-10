@@ -9,6 +9,9 @@ from io import BytesIO
 from os_rotatefile import open_file
 
 from .compat import StringIO, iteritems
+from .default_schema import InnerHeaderKeys as I_KEYS
+from .default_schema import RecordTypes as R_TYPES
+from .default_schema import SpageKeys as S_KEYS
 from .default_schema import META_SCHEMA
 from .validator import TIME_FORMAT, create_validator
 
@@ -32,30 +35,31 @@ class SpageRecordProcessor(RecordProcessor):
         return zlib.compress(data)
 
     def process(self, record, **kwargs):
-        if not record['http_header']:
-            record.pop('http_header')
-        inner_header = record['inner_header']
+        if not record[S_KEYS.HTTP_HEADER]:
+            record.pop(S_KEYS.HTTP_HEADER)
+        inner_header = record[S_KEYS.INNER_HEADER]
         store_size = original_size = len(
-            record['data']) if record['data'] is not None else -1
-        inner_header['Original-Size'] = original_size
+            record[S_KEYS.DATA]) if record[S_KEYS.DATA] is not None else -1
+        if I_KEYS.ORIGINAL_SIZE not in inner_header:
+            inner_header[I_KEYS.ORIGINAL_SIZE] = original_size
 
         if original_size >= 0:
-            data = record['data']
-            if inner_header.get('Type', None) is None:
+            data = record[S_KEYS.DATA]
+            if inner_header.get(I_KEYS.TYPE, None) is None:
                 if self._compress:
-                    inner_header['Type'] = 'compressed'
+                    inner_header[I_KEYS.TYPE] = R_TYPES.COMPRESSED
                     data = self._compress_data(data)
                     store_size = len(data)
                 else:
-                    inner_header['Type'] = 'flat'
+                    inner_header[I_KEYS.TYPE] = R_TYPES.FLAT
 
-            record['data'] = data
-            inner_header['Store-Size'] = store_size
+            record[S_KEYS.DATA] = data
+            inner_header[I_KEYS.STORE_SIZE] = store_size
         else:
-            for i in ['Original-Size', 'Store-Size']:
+            for i in (I_KEYS.ORIGINAL_SIZE, I_KEYS.STORE_SIZE):
                 if i in inner_header:
                     inner_header.pop(i)
-            record.pop('data')
+            record.pop(S_KEYS.DATA)
 
         self._validator.validate(record)
         return record
@@ -100,22 +104,22 @@ class SpageRecordEncoder(RecordEncoder):
 
     def dumps(self, record, **kwargs):
         o = BytesIO()
-        o.write(record['url'].encode(DEFAULT_ENCODING))
+        o.write(record[S_KEYS.URL].encode(DEFAULT_ENCODING))
         o.write(b'\n')
 
-        inner_header_str = self._inner_header_str(record['inner_header'])
+        inner_header_str = self._inner_header_str(record[S_KEYS.INNER_HEADER])
         o.write(inner_header_str.encode(DEFAULT_ENCODING))
         o.write(b'\n\n')
 
         http_header_str = self._http_header_str(
-            record.get('http_header', None))
+            record.get(S_KEYS.HTTP_HEADER, None))
         if not http_header_str:
             o.write(b'\r\n')
         else:
             o.write(http_header_str.encode(DEFAULT_ENCODING))
             o.write(b'\r\n\r\n')
 
-        data = record.get("data", None)
+        data = record.get(S_KEYS.DATA, None)
         if data is not None:
             o.write(data)
             o.write(b'\r\n')
@@ -142,12 +146,12 @@ class SpageRecordWriter(RecordWriter):
             raise ValueError(
                 "bytes-like data is required, not {}".format(type(data).__name__))
         record = {}
-        record["url"] = url
-        record["inner_header"] = {} if inner_header is None else copy.deepcopy(
+        record[S_KEYS.URL] = url
+        record[S_KEYS.INNER_HEADER] = {} if inner_header is None else copy.deepcopy(
             inner_header)
-        record["http_header"] = {} if http_header is None else copy.deepcopy(
+        record[S_KEYS.HTTP_HEADER] = {} if http_header is None else copy.deepcopy(
             http_header)
-        record["data"] = data
+        record[S_KEYS.DATA] = data
 
         record = self._processor.process(record)
         f.write(self._encoder.dumps(record))
@@ -155,9 +159,11 @@ class SpageRecordWriter(RecordWriter):
 
 def create_writer(**kwargs):
     validator = kwargs.get('validator', None)
-    validator = create_validator(META_SCHEMA) if validator is None else validator
+    validator = create_validator(
+        META_SCHEMA) if validator is None else validator
     processor = SpageRecordProcessor(validator, kwargs.get('compress', True))
-    allowed_keys = validator.schema['properties']['inner_header']['properties'].keys()
+    allowed_keys = validator.schema['properties'][S_KEYS.INNER_HEADER]['properties'].keys(
+    )
     encoder = SpageRecordEncoder(allowed_keys)
     return SpageRecordWriter(processor, encoder)
 
