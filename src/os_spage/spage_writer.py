@@ -40,22 +40,32 @@ class SpageRecordProcessor(RecordProcessor):
         inner_header = record[S_KEYS.INNER_HEADER]
         store_size = original_size = len(
             record[S_KEYS.DATA]) if record[S_KEYS.DATA] is not None else -1
-        if I_KEYS.ORIGINAL_SIZE not in inner_header:
-            inner_header[I_KEYS.ORIGINAL_SIZE] = original_size
 
         if original_size >= 0:
             data = record[S_KEYS.DATA]
-            if inner_header.get(I_KEYS.TYPE, None) is None:
+            r_type = inner_header.get(I_KEYS.TYPE, None)
+            if r_type is None:
+                if I_KEYS.ORIGINAL_SIZE in inner_header:
+                    raise ValueError('do not specify %s without Type' % I_KEYS.ORIGINAL_SIZE)
+                inner_header[I_KEYS.ORIGINAL_SIZE] = original_size
                 if self._compress:
                     inner_header[I_KEYS.TYPE] = R_TYPES.COMPRESSED
                     data = self._compress_data(data)
                     store_size = len(data)
                 else:
                     inner_header[I_KEYS.TYPE] = R_TYPES.FLAT
+            elif r_type == R_TYPES.COMPRESSED or r_type == R_TYPES.DELETED:
+                if I_KEYS.ORIGINAL_SIZE not in inner_header:
+                    raise ValueError('inner_header require %s' %
+                                     I_KEYS.ORIGINAL_SIZE)
+            elif r_type == R_TYPES.FLAT:
+                inner_header[I_KEYS.ORIGINAL_SIZE] = original_size
 
             record[S_KEYS.DATA] = data
             inner_header[I_KEYS.STORE_SIZE] = store_size
         else:
+            if I_KEYS.TYPE not in inner_header:
+                inner_header[I_KEYS.TYPE] = R_TYPES.FLAT
             for i in (I_KEYS.ORIGINAL_SIZE, I_KEYS.STORE_SIZE):
                 if i in inner_header:
                     inner_header.pop(i)
