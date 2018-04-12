@@ -5,9 +5,8 @@ from jsonschema import (Draft4Validator, FormatChecker, ValidationError,
                         validators)
 from jsonschema.compat import str_types
 
+from .common import TIME_FORMAT
 from .compat import iteritems
-
-TIME_FORMAT = "%a %b %d %X %Y"
 
 
 @FormatChecker.cls_checks("readable_time", raises=ValueError)

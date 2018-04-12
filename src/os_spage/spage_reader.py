@@ -1,10 +1,8 @@
 from os_rotatefile import open_file
 
+from .common import COLON, DEFAULT_ENCODING
+from .default_schema import InnerHeaderKeys as I_KEYS
 from .validator import simple_check_url
-
-COLON=u":"
-TAG_STORE_SIZE = u'Store-Size'
-DEFAULT_ENCODING = 'utf-8'
 
 
 def read(fp):
@@ -82,7 +80,7 @@ class Reader(object):
         return self._read()
 
     def _read_data(self):
-        size = int(self._inner_header.get(TAG_STORE_SIZE, -1))
+        size = int(self._inner_header.get(I_KEYS.STORE_SIZE, -1))
         if size < 0 or self._url_latest is not None:
             return self._generate()
 

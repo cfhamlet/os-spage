@@ -8,14 +8,13 @@ from io import BytesIO
 
 from os_rotatefile import open_file
 
+from .common import DEFAULT_ENCODING, TIME_FORMAT
 from .compat import StringIO, iteritems
 from .default_schema import InnerHeaderKeys as I_KEYS
 from .default_schema import RecordTypes as R_TYPES
 from .default_schema import SpageKeys as S_KEYS
 from .default_schema import META_SCHEMA
-from .validator import TIME_FORMAT, create_validator
-
-DEFAULT_ENCODING = 'utf-8'
+from .validator import create_validator
 
 
 class RecordProcessor(object):
@@ -46,7 +45,8 @@ class SpageRecordProcessor(RecordProcessor):
             r_type = inner_header.get(I_KEYS.TYPE, None)
             if r_type is None:
                 if I_KEYS.ORIGINAL_SIZE in inner_header:
-                    raise ValueError('do not specify %s without Type' % I_KEYS.ORIGINAL_SIZE)
+                    raise ValueError(
+                        'do not specify %s without Type' % I_KEYS.ORIGINAL_SIZE)
                 inner_header[I_KEYS.ORIGINAL_SIZE] = original_size
                 if self._compress:
                     inner_header[I_KEYS.TYPE] = R_TYPES.COMPRESSED

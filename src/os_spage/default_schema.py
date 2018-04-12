@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from datetime import datetime
 
+
 class RecordTypes(object):
     FLAT       = 'flat'
     DELETED    = 'deleted'
