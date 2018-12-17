@@ -22,6 +22,12 @@ It is common to write Spage to size-rotate-file, we choice [os-rotatefile](https
 
 __Notice__: os-spage should not be used for strict serialization/deserialization purpose, it will lose type info when written, all data will be read as string(unicode python2) after all.
  
+-------------------------
+Offpage:
+
+From v0.4, this libaray support reading from offpage. Offpage is another data storage format, include url, headers and series data. You can use ``read/open_file`` methods with ``page_type="offpage"`` to read from offpage.
+
+
 
 # Install
 
@@ -69,6 +75,7 @@ __Notice__: os-spage should not be used for strict serialization/deserialization
     for record in read(s):
         print(record)
   ```
+
 
 # Unit Tests
 
