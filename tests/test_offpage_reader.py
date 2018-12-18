@@ -22,14 +22,14 @@ Content-Type: A, 10;B, 11;C, 12;
     for page in reader.read():
         assert page['url'] == 'http://www.google.com/'
         assert page['header']['Key1'] == 'Value1'
-        assert page['data']['A'] == data1
-        assert page['data']['B'] == data2
-        assert page['data']['C'] == data3
+        assert page['data']['A'] == data1.encode()
+        assert page['data']['B'] == data2.encode()
+        assert page['data']['C'] == data3.encode()
 
     s = BytesIO(raw.encode('utf8'))
     for page in read(s, page_type='offpage'):
         assert page['url'] == 'http://www.google.com/'
         assert page['header']['Key1'] == 'Value1'
-        assert page['data']['A'] == data1
-        assert page['data']['B'] == data2
-        assert page['data']['C'] == data3
+        assert page['data']['A'] == data1.encode()
+        assert page['data']['B'] == data2.encode()
+        assert page['data']['C'] == data3.encode()
