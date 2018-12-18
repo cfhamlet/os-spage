@@ -7,3 +7,4 @@ source = os_spage
 source =
     src/os_spage
     .tox/*/lib/python*/site-packages/os_spage
+    .tox/*/site-packages/os_spage
