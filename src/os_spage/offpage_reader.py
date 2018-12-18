@@ -3,10 +3,7 @@ from os_rotatefile import open_file
 from .common import COLON, DEFAULT_ENCODING
 from .validator import simple_check_url
 
-_CONTENT_TYPE = 'Content-Type'
-_ORIGINAL_SIZE = 'Original-Size'
-
-_SERIES = (_CONTENT_TYPE, _ORIGINAL_SIZE)
+CONTENT_TYPE = 'Content-Type'
 
 
 def read(fp):
@@ -56,8 +53,6 @@ class Reader(object):
             if d > 0:
                 key = line[0:d].strip()
                 value = line[d + 1:].strip()
-                if key in _SERIES:
-                    value = self._split_series(value)
                 self._header[key] = value
         return self._read()
 
@@ -67,7 +62,7 @@ class Reader(object):
 
     def _read_data(self):
         data = {}
-        for key, size in self._header[_CONTENT_TYPE]:
+        for key, size in self._split_series(self._header[CONTENT_TYPE]):
             size = int(size)
             if size < 0 or self._url_latest is not None:
                 return self._generate()
