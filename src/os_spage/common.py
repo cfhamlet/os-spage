@@ -1,5 +1,4 @@
-
-DEFAULT_ENCODING = 'utf-8'
+DEFAULT_ENCODING = "utf-8"
 
 COLON = ":"
 

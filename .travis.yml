@@ -5,7 +5,7 @@ matrix:
     - python: 2.7
       env: TOXENV=py27,codecov
     - python: 3.6
-      env: TOXENV=py36,codecov
+      env: TOXENV=py36,codecov,lint
     - python: pypy
       env: TOXENV=pypy
     - python: pypy3

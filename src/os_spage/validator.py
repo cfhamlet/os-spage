@@ -1,8 +1,7 @@
 import copy
 from datetime import datetime
 
-from jsonschema import (Draft4Validator, FormatChecker, ValidationError,
-                        validators)
+from jsonschema import Draft4Validator, FormatChecker, validators
 from jsonschema.compat import str_types
 
 from .common import TIME_FORMAT
@@ -26,11 +25,11 @@ ERROR_TYPES = set(["HTTP", "SSL", "RULE", "SERVER", "DNS"])
 
 @FormatChecker.cls_checks("error_reason")
 def check_error_reason(err_string):
-    c = err_string.split(' ')
+    c = err_string.split(" ")
     if len(c) != 2:
         return False
 
-    return c[0] in ERROR_TYPES and c[1].lstrip('-').isdigit()
+    return c[0] in ERROR_TYPES and c[1].lstrip("-").isdigit()
 
 
 def extend_with_default(validator_class):
@@ -44,19 +43,15 @@ def extend_with_default(validator_class):
                     o = o()
                 instance.setdefault(property, o)
 
-        for error in validate_properties(
-            validator, properties, instance, schema
-        ):
+        for error in validate_properties(validator, properties, instance, schema):
             yield error
 
-    return validators.extend(
-        validator_class, {"properties": set_defaults},
-    )
+    return validators.extend(validator_class, {"properties": set_defaults})
 
 
 DefaultPropertyDraft4Validator = extend_with_default(Draft4Validator)
 
-EXTRA_TYPES = {'datetime': datetime, 'bytes': bytes}
+EXTRA_TYPES = {"datetime": datetime, "bytes": bytes}
 
 
 def create_validator(schema, extra_types=None, format_checker=None):
@@ -67,7 +62,5 @@ def create_validator(schema, extra_types=None, format_checker=None):
         format_checker = FormatChecker()
 
     return DefaultPropertyDraft4Validator(
-        schema,
-        types=types,
-        format_checker=format_checker,
+        schema, types=types, format_checker=format_checker
     )

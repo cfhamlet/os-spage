@@ -27,10 +27,10 @@ class Reader(object):
 
     def _generate(self):
         d = {}
-        d[u'url'] = self._url
-        d[u'inner_header'] = self._inner_header
-        d[u'http_header'] = self._http_header
-        d[u'data'] = self._data
+        d[u"url"] = self._url
+        d[u"inner_header"] = self._inner_header
+        d[u"http_header"] = self._http_header
+        d[u"data"] = self._data
         return d
 
     def _read_inner_header(self):
@@ -39,7 +39,7 @@ class Reader(object):
             raise StopIteration
         try:
             line = line.decode(DEFAULT_ENCODING).strip()
-        except Exception as e:
+        except Exception:
             return self._read()
         line_length = len(line)
         if line_length <= 0 and self._inner_header:
@@ -53,7 +53,7 @@ class Reader(object):
             d = line.find(COLON)
             if d > 0:
                 key = line[0:d].strip()
-                value = line[d + 1:].strip()
+                value = line[d + 1 :].strip()
                 self._inner_header[key] = value
         return self._read()
 
@@ -63,7 +63,7 @@ class Reader(object):
             raise StopIteration
         try:
             line = line.decode(DEFAULT_ENCODING).strip()
-        except Exception as e:
+        except Exception:
             return self._read()
         if not line:
             self._read = self._read_data
@@ -74,7 +74,7 @@ class Reader(object):
             d = line.find(COLON)
             if d > 0:
                 key = line[0:d].strip()
-                value = line[d + 1:].strip()
+                value = line[d + 1 :].strip()
                 self._http_header[key] = value
 
         return self._read()
@@ -98,7 +98,7 @@ class Reader(object):
 
 class SpageReader(object):
     def __init__(self, base_filename):
-        self._fp = open_file(base_filename, 'r')
+        self._fp = open_file(base_filename, "r")
 
     def close(self):
         self._fp.close()
