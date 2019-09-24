@@ -16,6 +16,6 @@ def test_simple_check_url():
     for data in valid_data:
         assert simple_check_url(data) == True
 
-    invalid_data = ["htp://www.google.com/", "https/www.google.com/"]
+    invalid_data = ["htp//www.google.com/", "https/www.google.com/"]
     for data in invalid_data:
         assert simple_check_url(data) == False
