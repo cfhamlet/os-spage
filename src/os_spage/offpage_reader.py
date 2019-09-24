@@ -3,7 +3,7 @@ from os_rotatefile import open_file
 from .common import COLON, DEFAULT_ENCODING
 from .validator import simple_check_url
 
-CONTENT_TYPE = 'Content-Type'
+CONTENT_TYPE = "Content-Type"
 
 
 def read(fp):
@@ -27,9 +27,9 @@ class Reader(object):
 
     def _generate(self):
         d = {}
-        d[u'url'] = self._url
-        d[u'header'] = self._header
-        d[u'data'] = self._data
+        d[u"url"] = self._url
+        d[u"header"] = self._header
+        d[u"data"] = self._data
         return d
 
     def _read_header(self):
@@ -38,7 +38,7 @@ class Reader(object):
             raise StopIteration
         try:
             line = line.decode(DEFAULT_ENCODING).strip()
-        except Exception as e:
+        except Exception:
             return self._read()
         line_length = len(line)
         if line_length <= 0 and self._header:
@@ -52,12 +52,12 @@ class Reader(object):
             d = line.find(COLON)
             if d > 0:
                 key = line[0:d].strip()
-                value = line[d + 1:].strip()
+                value = line[d + 1 :].strip()
                 self._header[key] = value
         return self._read()
 
     def _split_series(self, series):
-        s = [tuple(i.split(',')) for i in series.split(';') if ',' in i]
+        s = [tuple(i.split(",")) for i in series.split(";") if "," in i]
         return s
 
     def _read_data(self):
@@ -82,7 +82,7 @@ class Reader(object):
 
 class OffpageReader(object):
     def __init__(self, base_filename):
-        self._fp = open_file(base_filename, 'r')
+        self._fp = open_file(base_filename, "r")
 
     def close(self):
         self._fp.close()
