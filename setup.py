@@ -22,6 +22,7 @@ setup(
     license='MIT License',
     description='Read and write spage.',
     long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     author='Ozzy',
     author_email='cfhamlet@gmail.com',
     url='https://github.com/cfhamlet/os-spage',
