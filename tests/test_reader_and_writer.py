@@ -90,7 +90,7 @@ def test_spage_reader_and_writer(tmpdir):
             )
 
 
-def test_genergal_read_and_write(tmpdir):
+def test_general_read_and_write(tmpdir):
     base_url = "http://www.test.com/"
     with tmpdir.as_cwd():
         filename = "test_file"
@@ -202,3 +202,22 @@ def test_write_invalid_custom_data(tmpdir):
                     url, inner_header=inner_header, http_header=http_header, data=data
                 )
         f.close()
+
+
+def test_read_no_http_headers():
+    from io import BytesIO
+    from zlib import compress, decompress
+
+    data = b"hello world"
+    c_data = compress(data)
+    original_size = len(data)
+    store_size = len(c_data)
+    o = BytesIO()
+    o.write(
+        b"http://example.com/\nOriginal-Size: %d\nStore-Size: %d\n\n\r\n\r\n"
+        % (original_size, store_size)
+    )
+    o.write(c_data)
+    o.seek(0)
+    page = next(read(o))
+    assert decompress(page["data"]) == data
