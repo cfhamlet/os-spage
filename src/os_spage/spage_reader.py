@@ -87,6 +87,13 @@ class Reader(object):
         data = self._fp.read(size)
         if size > 0 and not data:
             raise StopIteration
+
+        if (
+            not self._http_header
+        ):  # compat invalid format: no http headers but write two '\r\n'
+            if data[0:2] == b"\r\n":
+                o = self._fp.read(2)
+                data = data[2:] + o
         self._data = data
         return self._generate()
 
