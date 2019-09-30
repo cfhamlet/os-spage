@@ -42,7 +42,7 @@ class Reader(object):
         except Exception:
             return self._read()
         line_length = len(line)
-        if line_length <= 0 and self._inner_header:
+        if line_length <= 0 and self._inner_header and self._url:
             self._read = self._read_http_header
         elif line_length > 1024:
             pass
