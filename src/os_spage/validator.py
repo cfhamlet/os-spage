@@ -17,7 +17,11 @@ def check_datetime(instance):
 
 @FormatChecker.cls_checks("url")
 def simple_check_url(url):
-    return len(url) > 0 and "://" in url
+    if len(url) > 0:
+        t = url.find(":")
+        if t > 0 and url[t : t + 3] == "://":
+            return True
+    return False
 
 
 ERROR_TYPES = set(["HTTP", "SSL", "RULE", "SERVER", "DNS"])
