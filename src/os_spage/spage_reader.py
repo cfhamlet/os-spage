@@ -68,7 +68,7 @@ class Reader(object):
         if not line:
             self._read = self._read_data
         elif simple_check_url(line):
-            self._url_latest = line.strip()
+            self._url_latest = line
             self._read = self._read_data
         else:
             d = line.find(COLON)
