@@ -3,6 +3,7 @@ import sys
 
 from .offpage_reader import OffpageReader, read as read_offpage
 from .spage_reader import SpageReader, read as read_spage
+from .spage_to_offpage import SpageToOffpage, read as spage_to_offpage
 from .spage_writer import SpageWriter, write as _write
 
 write = _write
@@ -13,20 +14,21 @@ def __not_supported_mode(name, **kwargs):
 
 
 def __not_supported_page_type(name, **kwargs):
-    raise ValueError("page_type must be 'spage' or 'offpage'")
+    raise ValueError("page_type must be 'spage', 'offpage', 's2o'")
 
 
 def read(s, page_type="spage"):
-    r = {"spage": read_spage, "offpage": read_offpage}.get(
+    r = {"spage": read_spage, "offpage": read_offpage, "s2o": spage_to_offpage}.get(
         page_type, __not_supported_page_type
     )
     return r(s)
 
 
 def open_file(name, mode, **kwargs):
-    r = {"w": SpageWriter, "r": {"spage": SpageReader, "offpage": OffpageReader}}.get(
-        mode, __not_supported_mode
-    )
+    r = {
+        "w": SpageWriter,
+        "r": {"spage": SpageReader, "offpage": OffpageReader, "s2o": SpageToOffpage},
+    }.get(mode, __not_supported_mode)
     if mode == "r":
         r = r.get(kwargs.pop("page_type", "spage"), __not_supported_page_type)
 
