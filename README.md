@@ -21,11 +21,29 @@ We use dict type to implements Spage. A predefined [schema](https://github.com/c
 It is common to write Spage to size-rotate-file, we choice [os-rotatefile](https://github.com/cfhamlet/os-rotatefile.git) as default back-end.
 
 __Notice__: os-spage should not be used for strict serialization/deserialization purpose, it will lose type info when written, all data will be read as string(unicode python2) after all.
- 
+
 -------------------------
 Offpage:
 
 From v0.4, this libaray support reading from offpage. Offpage is another data storage format, include url, headers and series data. You can use ``read/open_file`` methods with ``page_type="offpage"`` to read from offpage.
+
+
+
+From v0.5, support transform spage into offpage. You can use ``read/open_file`` methods with ``page_type="s2o"`` to read from spage and transform the record into offpage format. (Not fully tested yet)
+
+
+
+Example:
+
+```
+from os_spage import read
+
+f = open('your_spage', 'rb')
+for offpage in read(f, page_type='s2o'):
+    print(offpage )
+```
+
+
 
 
 
@@ -36,7 +54,7 @@ From v0.4, this libaray support reading from offpage. Offpage is another data st
 # Usage
 
   * Write to size-rotate-file
-  
+
   ```
     from os_spage import open_file
 
@@ -49,9 +67,9 @@ From v0.4, this libaray support reading from offpage. Offpage is another data st
     f.write(url, inner_header=inner_header, http_header=http_header, data=data, flush=True)
     f.close()
   ```
-  
+
   * Read from size-rotate-file
-  
+
   ```
     from os_spage import open_file
 
@@ -61,9 +79,9 @@ From v0.4, this libaray support reading from offpage. Offpage is another data st
         print(record)
     f.close()
   ```
-  
+
   * R/W with other file-like object
-  
+
   ```
     from io import BytesIO
     from os_spage import read, write
