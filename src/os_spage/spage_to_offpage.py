@@ -111,8 +111,11 @@ class Reader(object):
 
     def read(self):
         while True:
-            yield self._read()
-            self._reset()
+            try:
+                yield self._read()
+                self._reset()
+            except StopIteration:
+                return
 
 
 class SpageToOffpage(object):
