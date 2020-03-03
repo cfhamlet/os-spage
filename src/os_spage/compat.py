@@ -9,6 +9,7 @@ if PY3:
 
     iteritems = operator.methodcaller("items")
 
+
 else:
     from StringIO import StringIO as _StringIO
     from StringIO import StringIO as _BytesIO
